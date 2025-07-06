@@ -1,103 +1,158 @@
-import Image from "next/image";
 
-export default function Home() {
+"use client";
+import { useState, useEffect } from "react";
+import axiosInstance from "@/utils/axiosInstance";
+import { format, isSameDay, parseISO } from "date-fns";
+import Sidebar from "@/components/Sidebar";
+import AppointmentCard from "@/components/Appointmentcard";
+import Calendar from "@/components/Calendar";
+import { motion, AnimatePresence } from "framer-motion";
+
+
+export default function ClinicDashboard() {
+  const [appointments, setAppointments] = useState([]);
+
+  useEffect(() => {
+    const fetchTodayAppointments = async () => {
+      try {
+        const response = await axiosInstance.get("appointments/");
+        const allAppointments = response.data;
+
+        const today = new Date();
+
+        const todayAppointments = allAppointments.filter((appt) =>
+          isSameDay(parseISO(appt.start_time), today)
+        );
+
+        const formatted = todayAppointments.map((appt) => ({
+          id: appt.id,
+          time: `${format(parseISO(appt.start_time), "hh:mm a")} - ${format(
+            parseISO(appt.end_time),
+            "hh:mm a"
+          )}`,
+          patient: appt.patient_name || "Unknown",
+          status: appt.status || "Scheduled",
+          color: getStatusColor(appt.status),
+          start: appt.start_time,
+          end: appt.end_time,
+          title: appt.title,
+        }));
+
+        setAppointments(formatted);
+      } catch (err) {
+        console.error("❌ Error fetching appointments:", err);
+      }
+    };
+
+    fetchTodayAppointments();
+  }, []);
+
+  const handleStatusChange = async (patientName, newStatus) => {
+    const updatedAppointments = appointments.map((appt) =>
+      appt.patient === patientName
+        ? { ...appt, status: newStatus, color: getStatusColor(newStatus) }
+        : appt
+    );
+    setAppointments(updatedAppointments);
+
+    // 🔁 Find the appointment and update status in backend
+    const target = appointments.find((appt) => appt.patient === patientName);
+    if (target) {
+      try {
+        await axiosInstance.patch(`appointments/${target.id}/`, {
+          status: newStatus,
+        });
+        console.log(`✅ Status updated to '${newStatus}' for appointment ID ${target.id}`);
+      } catch (err) {
+        console.error("❌ Failed to update status:", err.response?.data || err.message);
+        alert("Failed to update status. Please try again.");
+      }
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div className="h-screen flex flex-col">
+      <div className="flex flex-1">
+        <Sidebar className="bg-gray-800 text-white" />
+        <main className="flex-1 p-6">
+          <h1 className="text-2xl font-bold">Clinic Schedule</h1>
+          <div className="mt-6">
+            <Calendar
+              appointments={appointments.map((appt) => ({
+                title: appt.patient,
+                start: appt.start,
+                end: appt.end,
+                backgroundColor: appt.color,
+              }))}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          </div>
+        </main>
+        {/* <aside className="w-1/4 bg-white p-4 shadow-lg overflow-y-auto">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Appointments Today</h2>
+        {appointments.length === 0 ? (
+          <p className="text-gray-500">No appointments for today.</p>
+        ) : (
+          <div className="space-y-4">
+            {appointments.map((appt) => (
+              <AppointmentCard
+                key={appt.id}
+                time={appt.time}
+                patient={appt.patient}
+                status={appt.status}
+                color={appt.color}
+                onStatusChange={handleStatusChange}
+              />
+            ))}
+          </div>
+        )}
+      </aside> */}
+        <aside className="w-1/4 bg-white p-4 shadow-lg overflow-y-auto">
+        <h2 className="text-xl font-bold text-gray-800 mb-4">Appointments Today</h2>
+
+        {appointments.length === 0 ? (
+          <p className="text-gray-500">No appointments for today.</p>
+        ) : (
+          <div className="space-y-4">
+            <AnimatePresence>
+              {appointments.map((appt) => (
+                <motion.div
+                  key={appt.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <AppointmentCard
+                    time={appt.time}
+                    patient={appt.patient}
+                    status={appt.status}
+                    color={appt.color}
+                    onStatusChange={handleStatusChange}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+      </aside>
+
+
+      </div>
     </div>
   );
+}
+
+function getStatusColor(status) {
+  switch (status) {
+    case "Checked In":
+      return "bg-green-500";
+    case "Engaged":
+      return "bg-red-500";
+    case "Checked Out":
+      return "bg-purple-500";
+    case "Waiting":
+      return "bg-blue-500";
+    default:
+      return "bg-yellow-500";
+  }
 }
