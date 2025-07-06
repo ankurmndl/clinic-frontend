@@ -328,7 +328,7 @@ export default function Navbar() {
         <li className="text-black"><PatientSearchBar /></li>
         <li><Link href="/emr">EMR</Link></li>
         <li><Link href="/billing">Billing</Link></li>
-        <li><Link href="/reports">Reports</Link></li>
+        <li><Link href="/clinic-stats">Reports</Link></li>
 
         {/* 👤 Auth Section */}
         {user ? (

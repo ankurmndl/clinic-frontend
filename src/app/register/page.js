@@ -151,7 +151,8 @@ export default function RegisterPage() {
     setSuccess('');
 
     try {
-      const res = await axios.post('http://127.0.0.1:8000/api/register/', form);
+      // const res = await axios.post('http://127.0.0.1:8000/api/register/', form);
+      const res = await axios.post('https://ankurm.pythonanywhere.com/api/register/', form);
       setSuccess('Registration successful! Redirecting to login...');
       setTimeout(() => router.push('/login'), 2000);
     } catch (err) {

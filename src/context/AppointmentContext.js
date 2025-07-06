@@ -90,10 +90,10 @@ export function AppointmentProvider({ children }) {
 
   const fetchAppointments = async () => {
     try {
-      console.log("📡 Fetching appointments with axiosInstance...");
+      // console.log("📡 Fetching appointments with axiosInstance...");
       const res = await axiosInstance.get("appointments/");
 
-      console.log("✅ Appointments fetched:", res.data);
+      // console.log("✅ Appointments fetched:", res.data);
 
       setAppointments(
         res.data.map((a) => ({

@@ -390,7 +390,7 @@ export const AuthProvider = ({ children }) => {
       const res = await axiosInstance.get("user-role/");
       return res.data.role;
     } catch (err) {
-      console.error("❌ Failed to fetch user role:", err.response?.data || err.message);
+      // console.error("❌ Failed to fetch user role:", err.response?.data || err.message);
       return null;
     }
   };
@@ -431,7 +431,7 @@ export const AuthProvider = ({ children }) => {
       router.push("/emr");
       return true;
     } catch (err) {
-      console.error("🔥 Login failed:", err.response?.data || err.message);
+      // console.error("🔥 Login failed:", err.response?.data || err.message);
       alert("Login failed. Check credentials.");
       return false;
     }
