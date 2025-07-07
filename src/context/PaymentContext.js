@@ -31,11 +31,13 @@ export const PaymentProvider = ({ patientId, children }) => {
   // ➕ Add new payment
   const addPayment = async (payment) => {
     try {
+      console.log("📤 Submitting payment with:", { ...payment, patient: patientId });
       const res = await axiosInstance.post("/payments/", {
         ...payment,
         patient: patientId,
       });
       setPayments((prev) => [...prev, res.data]);
+      return true; // ✅ Add this so success can be handled
     } catch (err) {
       console.error("❌ Error adding payment:", err.message);
       alert("Failed to add payment.");

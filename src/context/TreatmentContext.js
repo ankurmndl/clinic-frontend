@@ -112,38 +112,6 @@ export const TreatmentProvider = ({ patientId, children }) => {
     fetchTreatments();
   }, [patientId]);
 
-  // const addTreatment = async (treatment) => {
-  //   const formatDate = (input) => {
-  //     if (!input) return null;
-  //     const date = new Date(input);
-  //     return date.toISOString().split("T")[0]; // "YYYY-MM-DD"
-  //   };
-
-  //   const formData = new FormData();
-  //   formData.append("patient", parseInt(patientId));
-  //   formData.append("name", treatment.name);
-  //   formData.append("estimated_cost", parseFloat(treatment.estimated_cost || 0));
-  //   formData.append("tooth", treatment.tooth || "");
-  //   formData.append("date", formatDate(treatment.date));
-
-  //   if (treatment.xray) {
-  //     formData.append("xray", treatment.xray);
-  //   }
-
-  //   try {
-  //     const response = await axiosInstance.post("treatments/", formData, {
-  //       headers: {
-  //         "Content-Type": "multipart/form-data",
-  //       },
-  //     });
-
-  //     setTreatments((prev) => [...prev, response.data]);
-  //   } catch (err) {
-  //     console.error("❌ Error saving treatment:", err.response?.data || err.message);
-  //     alert("Could not add treatment.");
-  //   }
-  // };
-
     const addTreatment = async (treatment) => {
       const formatDate = (input) => {
         if (!input) return null;

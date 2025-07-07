@@ -13,7 +13,9 @@ import AppointmentsTab from "@/components/PatientTabs/AppointmentsTab";
 
 export default function PatientDetailWrapper() {
   const { id } = useParams();
-
+  const patientId = parseInt(id); // ✅ ensure it's an integer
+  console.log("🔍 patientId in wrapper:", id); // ✅ log this
+  
   return (
     <TreatmentProvider patientId={id}>
       <PaymentProvider patientId={id}>
